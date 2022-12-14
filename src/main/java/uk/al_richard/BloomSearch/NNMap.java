@@ -8,14 +8,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *  A Class to map from reference points to the number_nns which have that reference point in their nearest neighbour set.
+ */
 public class NNMap {
 
-    private final Map<Integer,CartesianPoint> refs = new HashMap<>();
-    private final Map<Integer,CartesianPoint> dat = new HashMap<>();
+    private final Map<Integer,CartesianPoint> refs = new HashMap<>(); // Maps could be indexed and map to bit balanced  ints
+    private final Map<Integer,CartesianPoint> dat = new HashMap<>(); // Maps could be indexed and map to bit balanced  ints
     private final int number_nns;
     private final Metric<CartesianPoint> metric;
 
-    private Map<Integer, OrderedList<Integer, Double>> map = new HashMap<Integer, OrderedList<Integer, Double>>();
+    private final Map<Integer, OrderedList<Integer, Double>> map = new HashMap<>();
 
     public NNMap(List<CartesianPoint> refs, List<CartesianPoint> dat, Metric<CartesianPoint> metric, int number_nns) {
 
@@ -25,21 +28,6 @@ public class NNMap {
         this.metric = metric;
 
         initialiseNNMap();
-    }
-
-    private void initialiseRefs(List<CartesianPoint> supplied_refs) {
-        initialiseRawData( refs,supplied_refs );
-    }
-
-    private void initialiseDat(List<CartesianPoint> supplied_dat) {
-        initialiseRawData(dat, supplied_dat);
-    }
-
-    private void initialiseRawData(Map<Integer, CartesianPoint> map, List<CartesianPoint> points) {
-        int i = 1;
-        for( CartesianPoint p : points ) {
-            map.put( i++, p );
-        }
     }
 
     private void initialiseNNMap() {
@@ -56,6 +44,21 @@ public class NNMap {
 
             map.put(ro_index,ol);
             showDists(ro_index, ol);
+        }
+    }
+
+    private void initialiseRefs(List<CartesianPoint> supplied_refs) {
+        initialiseRawData( refs,supplied_refs );
+    }
+
+    private void initialiseDat(List<CartesianPoint> supplied_dat) {
+        initialiseRawData(dat, supplied_dat);
+    }
+
+    private void initialiseRawData(Map<Integer, CartesianPoint> map, List<CartesianPoint> points) {
+        int i = 1;
+        for( CartesianPoint p : points ) {
+            map.put( i++, p );
         }
     }
 
