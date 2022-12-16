@@ -9,6 +9,9 @@ import testloads.TestContext.Context;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * A driver program to test the BloomSearch algorithm
+ */
 public class BloomSearch {
 
 	public static void main(String[] args) throws Exception {
@@ -20,7 +23,7 @@ public class BloomSearch {
 		boolean rotationEnabled = true;
 		int noOfRefPoints = 20; 							// small for now
 
-		System.out.println("Date/time\t" + new Date().toString());
+		System.out.println("Date/time\t" + new Date());
 
 		TestContext tc = new TestContext(context);
 		int query_size =  1000;
@@ -30,7 +33,12 @@ public class BloomSearch {
 		List<CartesianPoint> refs = tc.getRefPoints();
 		double threshold = tc.getThresholds()[0];
 		List<CartesianPoint> queries = tc.getQueries();
-		int nn_size = 5;
+		int nn_size = 20;
+
+		int hash_size_in_bits = 12;
+		int hash_overlap = 2;
+
+		double bloom_width = Math.pow(2,hash_size_in_bits);
 
 		Metric<CartesianPoint> metric = new Euclidean<>();
 
@@ -39,8 +47,13 @@ public class BloomSearch {
 		System.out.println( "query size =\t" + query_size );
 		System.out.println( "NN size =\t" + nn_size );
 		System.out.println( "Metric =\t" + metric.getMetricName() );
+		System.out.println( "Hash size=\t" + hash_size_in_bits );
+		System.out.println( "Hash overlap=\t" + hash_overlap );
+		System.out.println( "Bloom width =\t" + bloom_width );
 
-		NNMap map = new NNMap( refs, dat, metric, nn_size );
+		NNMap map = new NNMap( refs, dat, metric, nn_size, bloom_width, hash_size_in_bits, hash_overlap );
+
+
 	}
 
 

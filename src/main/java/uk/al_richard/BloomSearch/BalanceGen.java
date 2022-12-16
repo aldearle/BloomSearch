@@ -1,6 +1,9 @@
 package uk.al_richard.BloomSearch;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class creates identifiers (ints) which are comprised of even numbers of ones and zeros.
@@ -15,10 +18,27 @@ public class BalanceGen {
     public BalanceGen() {}
 
     /**
+     *
      * @param number_unique_bit_balanced_numbers_required - the number of identifiers we need (expected to be governed by some dataset size).
-     * @return an iterator which is guaranteed to be able to generate at least number_unique_bit_balanced_numbers_required of unique bit balanced integers
+     * @return an iterator which is guaranteed to be able to generate at least number_unique_bit_balanced_numbers_required of RANDOM unique bit balanced integers.
      */
-    public Iterator<Integer> getIterator( int number_unique_bit_balanced_numbers_required ) {
+    public static Iterator<Integer> getRandomIterator( int number_unique_bit_balanced_numbers_required ) {
+        List<Integer> list = new ArrayList<>();
+
+        Iterator<Integer> iter = getIterator(number_unique_bit_balanced_numbers_required);
+        while( iter.hasNext() ) {
+            list.add( iter.next() );
+        }
+
+        Collections.shuffle(list);
+        return list.listIterator();
+    }
+
+    /**
+     * @param number_unique_bit_balanced_numbers_required - the number of identifiers we need (expected to be governed by some dataset size).
+     * @return an iterator which is guaranteed to be able to generate at least number_unique_bit_balanced_numbers_required of unique bit balanced integers.
+     */
+    public static Iterator<Integer> getIterator( int number_unique_bit_balanced_numbers_required ) {
 
         final int bits_required = findBits( number_unique_bit_balanced_numbers_required );
         final int bits = 1 << bits_required;
@@ -82,7 +102,7 @@ public class BalanceGen {
                     break;
                 }
             }
-            System.out.println( "Initialised seed = " + seed + " len " + Integer.toBinaryString(seed).length());
+        //    System.out.println( "Initialised seed = " + seed + " len " + Integer.toBinaryString(seed).length());
         }
 
         @Override
