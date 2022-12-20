@@ -29,15 +29,27 @@ public class Bloom {
      * Returns a hex representation of the bloom filter
      */
     public String toString() {
-        byte[] bytes = bitrep.toByteArray();
+        return showBits( bitrep );
+    }
+
+    /**
+     * @param bits - the bitset for which a representation is required
+     * @return a hex representation of the bloom filter
+     */
+    public static String showBits( OpenBitSet bits ) {
+        byte[] bytes = bits.toByteArray();
         StringBuilder sb = new StringBuilder();
         sb.append( "Bytes: " );
         for( int i = 0; i < bytes.length; i++ ) {
-            sb.append(Integer.toHexString(bytes[i]));
             if( ( ( i % 2 ) == 0 ) && i > 1 ) {
                 sb.append(":");
             }
+            sb.append(String.format("%1x", bytes[i]));
         }
         return sb.toString();
     }
+
+    public OpenBitSet getBits() { return bitrep; }
+
+    public OpenBitSet getBitsCopy() { return (OpenBitSet) bitrep.clone(); }
 }

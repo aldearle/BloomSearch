@@ -1,9 +1,7 @@
 package uk.al_richard.BloomSearch;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class creates identifiers (ints) which are comprised of even numbers of ones and zeros.
@@ -47,16 +45,16 @@ public class BalanceGen {
     }
 
     /**
-     * @param number_unique_bit_balanced_numbers_required - the number_unique_bit_balanced_numbers_required of identifiers this code needs to be able to generate
+     * @param number - the number of identifiers this code needs to be able to generate
      * @return true if the number of ones and zeros in the representation are equal.
      */
-    private static boolean bitsAreBalanced(int number_unique_bit_balanced_numbers_required)
+    public static boolean bitsAreBalanced(int number)
     {
         int count_zeros = 0;
         int count_ones = 0;
 
         for (int bit_index = 31; bit_index >= 0; bit_index--) {                 // assumes 32 bit ints
-            if( ((number_unique_bit_balanced_numbers_required >> bit_index) & 1) == 1 ) {
+            if( ((number >> bit_index) & 1) == 1 ) {
                 count_ones++;
             } else if(count_ones > 0) {
                 count_zeros++;
@@ -65,6 +63,8 @@ public class BalanceGen {
         return count_zeros == count_ones;
     }
 
+
+
     /**
      * Used in initialisation
      * @param number_unique_bit_balanced_numbers_required - the number of identifiers this code needs to be able to generate
@@ -72,12 +72,19 @@ public class BalanceGen {
      */
     private static int findBits(int number_unique_bit_balanced_numbers_required) {
         for( int i = 1; i < 32; i++ ) {
-            if( (1 << i) > number_unique_bit_balanced_numbers_required) {
-                System.out.println( i + 4 );
+            if( (1 << i) > number_unique_bit_balanced_numbers_required && i % 2 == 0 ) { // must have even number of bits
                 return i + 4; // +4 heuristic!
             }
         }
         throw new RuntimeException( "Cannot satisfy requirement - number of results required too high");
+    }
+
+    /**
+     * @param numbers - a list of integers
+     * @return the set with the non balanced results removed
+     */
+    public static Set<Integer> filter(Set<Integer> numbers) {
+        return numbers.stream().filter( num -> bitsAreBalanced( num ) ).collect(Collectors.toSet());
     }
 
     /**
