@@ -46,14 +46,15 @@ public class BalanceGen {
 
     /**
      * @param number - the number of identifiers this code needs to be able to generate
+     * @param bits_required
      * @return true if the number of ones and zeros in the representation are equal.
      */
-    public static boolean bitsAreBalanced(int number)
+    public static boolean bitsAreBalanced(int number, int bits_required)
     {
         int count_zeros = 0;
         int count_ones = 0;
 
-        for (int bit_index = 31; bit_index >= 0; bit_index--) {                 // assumes 32 bit ints
+        for (int bit_index = bits_required - 1; bit_index >= 0; bit_index--) {
             if( ((number >> bit_index) & 1) == 1 ) {
                 count_ones++;
             } else if(count_ones > 0) {
@@ -81,10 +82,20 @@ public class BalanceGen {
 
     /**
      * @param numbers - a list of integers
+     * @param num_bits_in_data_source
      * @return the set with the non balanced results removed
      */
-    public static Set<Integer> filter(Set<Integer> numbers) {
-        return numbers.stream().filter( num -> bitsAreBalanced( num ) ).collect(Collectors.toSet());
+    public static Set<Integer> filter(Set<Integer> numbers, int num_bits_in_data_source) {
+//        Set<Integer> result = new HashSet<>();
+//        for( int num : numbers ) {
+//           if( bitsAreBalanced( num, num_bits_in_data_source ) ) {
+//               result.add(num);
+//           } else {
+//           }
+//        }
+//        return result;
+
+        return numbers.stream().filter( num -> bitsAreBalanced( num, num_bits_in_data_source ) ).collect(Collectors.toSet()); // can't debug
     }
 
     /**
@@ -116,7 +127,7 @@ public class BalanceGen {
         public boolean hasNext() {
 
             while( true ) {
-                if ( bitsAreBalanced( seed ) ) {
+                if ( bitsAreBalanced( seed,bits_required ) ) {
                     if ( Integer.toBinaryString(seed).length() == bits_required ) { // if we have not run out of bits (normal case).
                         consumed = false;
                         return true;

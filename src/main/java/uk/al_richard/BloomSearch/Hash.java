@@ -69,7 +69,7 @@ public class Hash {
      * @param required_length - the length of the result string
      * @return a string that is left padded to be of required_length digits
      */
-    private static String pad(String binary_string, int required_length) {
+    public static String pad(String binary_string, int required_length) {
         String result = binary_string;
         int num_zeros = required_length - binary_string.length();
         for( int i = 0; i < num_zeros; i++ ) {
@@ -149,7 +149,7 @@ public class Hash {
         int number = 0b101001011010111100011000; // 24 bits
 
         int overlap = 2;
-        int hash_length = 8;
+        int hash_length = 10;
         int source_length = 24; // number of bits
 
         System.out.println("Number: " + pad( Integer.toBinaryString(number),24) );
@@ -159,14 +159,14 @@ public class Hash {
 
         Hash hash = new Hash(hash_length, overlap,source_length);
         List<Integer> splits = hash.hash(number);
-//        for (int i : splits) {
-//            System.out.println("hash:\t" + i + " " +  pad(Integer.toBinaryString(i), hash_length));
-//        }
+        for (int i : splits) {
+            System.out.println("hash:\t" + i + " " +  pad(Integer.toBinaryString(i), hash_length));
+        }
 
-        Set<Integer> recovered = BalanceGen.filter( hash.reverseHashes( splits ) );
+        Set<Integer> recovered = BalanceGen.filter( hash.reverseHashes( splits ), source_length);
         int count = 1;
         for (int i : recovered) {
-            System.out.println("recovered: " + count++ + "\t" + pad(Integer.toBinaryString(i), 24));
+            System.out.println("recovered: " + count++ + "\t" + pad(Integer.toBinaryString(i), source_length));
         }
 
     }

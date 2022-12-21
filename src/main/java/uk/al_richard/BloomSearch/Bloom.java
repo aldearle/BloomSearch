@@ -2,15 +2,20 @@ package uk.al_richard.BloomSearch;
 
 import uk.al_richard.BloomSearch.Util.OpenBitSet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Bloom {
 
     private final OpenBitSet bitrep;
+    private final double width;
 
     /**
      * Creates a Bloom filter with a width of width bits.
      * @param width - the width of the bloom filter in bits
      */
     public Bloom(double width ) {
+        this.width = width;
         if( width > Integer.MAX_VALUE ) {
             throw new RuntimeException( "Cannot create a bloom filter with width " + width );
         }
@@ -30,6 +35,18 @@ public class Bloom {
      */
     public String toString() {
         return showBits( bitrep );
+    }
+
+    public static List<Integer> getSetBits(OpenBitSet bits, double width) {
+        List<Integer> result = new ArrayList<>();
+
+        for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i+1)) {
+            result.add( i );
+            if (i == width) {
+                break;
+            }
+        }
+        return result;
     }
 
     /**

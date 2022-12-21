@@ -7,6 +7,8 @@ import util.OrderedList;
 
 import java.util.*;
 
+import static uk.al_richard.BloomSearch.Hash.pad;
+
 /**
  *  A Class to map from reference points to the number_nns which have that reference point in their nearest neighbour set.
  */
@@ -18,10 +20,11 @@ public class NNMap {
     private final double bloom_width;                                   // The width of the bloom filter
     private final Metric<CartesianPoint> metric;                        // the metric to use
     private final int number_instantiation_nns;                         // The number of nns to use in the bloom_map
-    private final int number_search_nns = 4;                            // The number of nns to use to select query solutions
+    private final int number_of_nn_pivots;                            // The number of nns to use to select query solutions
     private final Hash hash;
+    private final int num_bits_in_data_source;
 
-    public NNMap(List<CartesianPoint> refs, List<CartesianPoint> dat, Metric<CartesianPoint> metric, int number_nns, double bloom_width, int hash_size_in_bits, int hash_overlap, int num_bits_in_data_source) {
+    public NNMap(List<CartesianPoint> refs, List<CartesianPoint> dat, Metric<CartesianPoint> metric, int number_nns, double bloom_width, int hash_size_in_bits, int hash_overlap, int num_bits_in_data_source, int number_of_nn_pivots) {
 
         int total_size = refs.size() + dat.size();
         Iterator<Integer> identifiers = BalanceGen.getRandomIterator(total_size);
@@ -32,6 +35,8 @@ public class NNMap {
         this.number_instantiation_nns = number_nns;
         this.bloom_width = bloom_width;
         this.metric = metric;
+        this.number_of_nn_pivots = number_of_nn_pivots;
+        this.num_bits_in_data_source = num_bits_in_data_source;
 
         this.hash = new Hash( hash_size_in_bits,hash_overlap, num_bits_in_data_source);
 
@@ -41,8 +46,11 @@ public class NNMap {
     public Set<CartesianPoint> search(CartesianPoint query) {
         Set<CartesianPoint> results = new HashSet<>();
         Set<Integer> indices = getDataIndices(query);
+        System.out.println( "Matching indices in result = " + indices.size() ) ;
         for( int data_index : indices ) {
+            System.out.print( "result index = " + pad( Integer.toBinaryString(data_index),num_bits_in_data_source ) );
             CartesianPoint point = dat.get(data_index);
+            System.out.println( point == null ? " NOT found" : " FOUND " );
             if( point != null ) {
                 results.add( point );
             }
@@ -58,27 +66,20 @@ public class NNMap {
      * @return - the set of data indices corresponding to the hashes returned
      */
     private Set<Integer> getDataIndices(CartesianPoint query) {
-        List<Integer> matching_hashes = getHashes( query ); // these are the AND of the hashes of datums that for which the pivots are NNs.
+        List<Integer> matching_hashes = getSetBits( query ); // these are the AND of the hashes of datums that for which the pivots are NNs.
 
-        return BalanceGen.filter( hash.reverseHashes( matching_hashes ) );
+        return BalanceGen.filter( hash.reverseHashes( matching_hashes ),num_bits_in_data_source );
     }
 
     /**
      * @param query - a metric query to be performed
      * @return a set of hashes which are extracted from the bloom filter search result
      */
-    private List<Integer> getHashes(CartesianPoint query) {
-        List<Integer> result = new ArrayList<>();
-
+    private List<Integer> getSetBits(CartesianPoint query) {
         OpenBitSet bits = bitSearch(query);
 
-        for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i+1)) {
-            result.add( i );
-            if (i == bloom_width) {
-                break;
-            }
-        }
-        return result;
+        return Bloom.getSetBits(bits,bloom_width);
+
     }
 
     /**
@@ -102,7 +103,7 @@ public class NNMap {
     }
     
     private List<Integer> findClosestPivotIndices(CartesianPoint query) {
-        OrderedList<Integer, Double> ol = new OrderedList<>(number_search_nns); // a list of the closest pivots to the query.
+        OrderedList<Integer, Double> ol = new OrderedList<>(number_of_nn_pivots); // a list of the closest pivots to the query.
         for( int i : refs.keySet() ) {
             CartesianPoint ref = refs.get(i);
             ol.add( i,metric.distance(query,ref ) ); // remember the closest pivots to the query,
@@ -134,9 +135,12 @@ public class NNMap {
                     bloom.addhash(hash);
                 }
             }
+            OpenBitSet bits = bloom.getBits();                            // Debug/analysis
+            List<Integer> set_bits = Bloom.getSetBits(bits,bloom_width);  // Debug/analysis
+            System.out.println( "Bits set = " + set_bits.size() + "(" +  ( set_bits.size() * 100 / bits.size() ) +  "%)" );  // Debug/analysis
 
-            showDists(ro_index, ol);
-            showBloom( bloom );
+            //showDists(ro_index, ol);
+            //showBloom( bloom );
             bloom_map.put(ro_index,bloom);
 
         }
