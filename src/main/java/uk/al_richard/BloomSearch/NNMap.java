@@ -18,10 +18,10 @@ public class NNMap {
     private final double bloom_width;                                   // The width of the bloom filter
     private final Metric<CartesianPoint> metric;                        // the metric to use
     private final int number_instantiation_nns;                         // The number of nns to use in the bloom_map
-    private final int number_search_nns = 4;                           // The number of nns to use to select query solutions
+    private final int number_search_nns = 4;                            // The number of nns to use to select query solutions
     private final Hash hash;
 
-    public NNMap(List<CartesianPoint> refs, List<CartesianPoint> dat, Metric<CartesianPoint> metric, int number_nns, double bloom_width, int hash_size_in_bits, int hash_overlap, int source_length) {
+    public NNMap(List<CartesianPoint> refs, List<CartesianPoint> dat, Metric<CartesianPoint> metric, int number_nns, double bloom_width, int hash_size_in_bits, int hash_overlap, int num_bits_in_data_source) {
 
         int total_size = refs.size() + dat.size();
         Iterator<Integer> identifiers = BalanceGen.getRandomIterator(total_size);
@@ -33,7 +33,7 @@ public class NNMap {
         this.bloom_width = bloom_width;
         this.metric = metric;
 
-        this.hash = new Hash( hash_size_in_bits,hash_overlap, source_length);
+        this.hash = new Hash( hash_size_in_bits,hash_overlap, num_bits_in_data_source);
 
         initialiseNNMap(bloom_width,hash_size_in_bits,hash_overlap);
     }

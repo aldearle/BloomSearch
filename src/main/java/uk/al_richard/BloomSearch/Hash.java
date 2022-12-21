@@ -12,17 +12,17 @@ public class Hash {
 
     private final int hash_length;
     private final int overlap;
-    private final int source_length;
+    private final int num_bits_in_data_source;
 
     /**
      * @param hash_length - how long the hash is required to be
      * @param overlap - each hash is overlapped by this amount
-     * @param source_length - the length of the integers being hashed.
+     * @param num_bits_in_data_source - the length of the integers being hashed.
      */
-    public Hash(int hash_length, int overlap, int source_length) {
+    public Hash(int hash_length, int overlap, int num_bits_in_data_source) {
         this.hash_length = hash_length;
         this.overlap = overlap;
-        this.source_length = source_length;
+        this.num_bits_in_data_source = num_bits_in_data_source;
     }
 
     /**
@@ -33,11 +33,11 @@ public class Hash {
     public List<Integer> hash( int to_split ) {
         List<Integer> result = new ArrayList<>();
 
-        if (source_length < hash_length) {
+        if (num_bits_in_data_source < hash_length) {
             throw new RuntimeException("Not enough bits with which to hash");
         }
 
-        int num_hashes_created = ( source_length - hash_length ) / overlap;
+        int num_hashes_created = ( num_bits_in_data_source - hash_length ) / overlap;
 
         for( int index = 0; index <= num_hashes_created; index++ ) {
             int val = (to_split & bits(hash_length));
@@ -97,7 +97,7 @@ public class Hash {
             int initial_hash = hashes.get(initial_index);
             new_list.add(initial_hash);  // each initial will be of length hash_length bits.
 
-            for (int index = non_overlap_size; index < source_length; index += overlap) { // move up the entries in result, overlap bits at a time.
+            for (int index = non_overlap_size; index < num_bits_in_data_source; index += overlap) { // move up the entries in result, overlap bits at a time.
 
                 for (int hash_index = 0; hash_index < hashes.size(); hash_index++) {
                     if (initial_index != hash_index) {

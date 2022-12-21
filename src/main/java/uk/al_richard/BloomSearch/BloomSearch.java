@@ -26,20 +26,20 @@ public class BloomSearch {
 
 		System.out.println("Date/time\t" + new Date());
 
-		int noOfRefPoints = 100; 							// small for now
+		int noOfRefPoints = 500; 							// small for now
 		TestContext tc = new TestContext(context);
 		int query_size =  1000;
 		tc.setSizes(query_size, noOfRefPoints);
 		List<CartesianPoint> dat = tc.getData();
 		dat = dat.subList(0,1000); 							// small for now
 		List<CartesianPoint> refs = tc.getRefPoints();
-		double threshold = tc.getThresholds()[0];
+		// double threshold = tc.getThresholds()[0];
 		List<CartesianPoint> queries = tc.getQueries();
-		int nn_size = 50;
+		int num_nn_in_bloom = 50;
 
 		int hash_size_in_bits = 12;
 		int hash_overlap = 2;
-		int source_length = 24;
+		int bits_in_data_encoding = 24;
 
 		double bloom_width = Math.pow(2,hash_size_in_bits);
 
@@ -48,30 +48,45 @@ public class BloomSearch {
 		System.out.println( "data size =\t" + dat.size() );
 		System.out.println( "refs size =\t" + refs.size() );
 		System.out.println( "query size =\t" + query_size );
-		System.out.println( "NN size =\t" + nn_size );
+		System.out.println( "NN size =\t" + num_nn_in_bloom );
 		System.out.println( "Metric =\t" + metric.getMetricName() );
 		System.out.println( "Hash size=\t" + hash_size_in_bits );
 		System.out.println( "Hash overlap=\t" + hash_overlap );
 		System.out.println( "Bloom width =\t" + bloom_width );
-		System.out.println( "Source length =\t" + source_length );
+		System.out.println( "Source length =\t" + bits_in_data_encoding );
 
-		NNMap map = new NNMap( refs, dat, metric, nn_size, bloom_width, hash_size_in_bits, hash_overlap, source_length );
+		NNMap map = new NNMap( refs, dat, metric, num_nn_in_bloom, bloom_width, hash_size_in_bits, hash_overlap, bits_in_data_encoding );
 
 		CartesianPoint query = queries.get(0);
 
 		Set<CartesianPoint> results = map.search( query );
 		int count = 1;
-		for( CartesianPoint point : results ) {
-			System.out.println( "result " + count++ + " distance = " + metric.distance(query,point) );
+		if( results.size() == 0 ) {
+			System.out.println( "No results found");
+		} else {
+			System.out.println( "Results:" );
+			for (CartesianPoint point : results) {
+				System.out.println("result " + count++ + " distance = " + metric.distance(query, point));
+			}
+			bruteForce(query,dat,metric);
 		}
-		bruteForce(query,dat,metric);
+
 	}
 
 	private static void bruteForce(CartesianPoint query, List<CartesianPoint> dat, Metric<CartesianPoint> metric) {
 		OrderedList<CartesianPoint, Double> ol = new OrderedList<>(5);
+		double sum = 0.0d;
+		double max = Double.MIN_VALUE;
 		for( CartesianPoint point : dat ) {
-			ol.add( point, metric.distance(query,point) );
+			double dist = metric.distance(query,point);
+			sum = sum + dist;
+			if( dist > max ) {
+				max = dist;
+			}
+			ol.add( point, dist );
 		}
+		System.out.println("Max distance to query = " + max );
+		System.out.println("Mean distance to query = " + ( sum / dat.size() ) );
 		System.out.println( "5 closest distances to query are:");
 		int count = 1;
 		for( Double dist : ol.getComparators() ) {
