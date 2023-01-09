@@ -12,17 +12,17 @@ public class Hash {
 
     private final int hash_length;
     private final int overlap;
-    private final int num_bits_in_data_source;
+    private final int num_bits_in_balanced_rep;
 
     /**
      * @param hash_length - how long the hash is required to be
      * @param overlap - each hash is overlapped by this amount
-     * @param num_bits_in_data_source - the length of the integers being hashed.
+     * @param num_bits_in_balanced_rep - the length of the integers being hashed.
      */
-    public Hash(int hash_length, int overlap, int num_bits_in_data_source) {
+    public Hash(int hash_length, int overlap, int num_bits_in_balanced_rep) {
         this.hash_length = hash_length;
         this.overlap = overlap;
-        this.num_bits_in_data_source = num_bits_in_data_source;
+        this.num_bits_in_balanced_rep = num_bits_in_balanced_rep;
     }
 
     /**
@@ -33,11 +33,11 @@ public class Hash {
     public List<Integer> hash( int to_split ) {
         List<Integer> result = new ArrayList<>();
 
-        if (num_bits_in_data_source < hash_length) {
+        if (num_bits_in_balanced_rep < hash_length) {
             throw new RuntimeException("Not enough bits with which to hash");
         }
 
-        int num_hashes_created = ( num_bits_in_data_source - hash_length ) / overlap;
+        int num_hashes_created = ( num_bits_in_balanced_rep - hash_length ) / overlap;
 
         for( int index = 0; index <= num_hashes_created; index++ ) {
             int val = (to_split & bits(hash_length));
@@ -70,6 +70,9 @@ public class Hash {
      * @return a string that is left padded to be of required_length digits
      */
     public static String pad(String binary_string, int required_length) {
+        if( binary_string.length() > required_length ) {
+            throw new RuntimeException( "String: " + binary_string + " has length " + binary_string.length() + " greater than " + required_length);
+        }
         String result = binary_string;
         int num_zeros = required_length - binary_string.length();
         for( int i = 0; i < num_zeros; i++ ) {
@@ -83,7 +86,7 @@ public class Hash {
      * @return the set of possible records that created the hashes (including false positives).
      */
     public Set<Integer> reverseHashes(List<Integer> hashes) {
-        // The ammount of debig in this code reflects the difficulty in writing
+        // The amount of debug in this code reflects the difficulty in writing
         // I doubt this code is optimal.
 
         Set<Integer> result = new TreeSet<>();
@@ -97,7 +100,7 @@ public class Hash {
             int initial_hash = hashes.get(initial_index);
             new_list.add(initial_hash);  // each initial will be of length hash_length bits.
 
-            for (int index = non_overlap_size; index < num_bits_in_data_source; index += overlap) { // move up the entries in result, overlap bits at a time.
+            for (int index = non_overlap_size; index < num_bits_in_balanced_rep - overlap; index += overlap) { // move up the entries in result, overlap bits at a time.
 
                 for (int hash_index = 0; hash_index < hashes.size(); hash_index++) {
                     if (initial_index != hash_index) {

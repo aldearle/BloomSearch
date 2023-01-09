@@ -12,7 +12,7 @@ import static uk.al_richard.BloomSearch.Hash.pad;
 /**
  *  A Class to map from reference points to the number_nns which have that reference point in their nearest neighbour set.
  */
-public class NNMap {
+public class MetricNNMap {
 
     private final Map<Integer,CartesianPoint> refs = new HashMap<>();   // Maps could be indexed and map to bit balanced  ints
     private final Map<Integer,CartesianPoint> dat = new HashMap<>();    // Maps could be indexed and map to bit balanced  ints
@@ -24,7 +24,7 @@ public class NNMap {
     private final Hash hash;
     private final int num_bits_in_data_source;
 
-    public NNMap(List<CartesianPoint> refs, List<CartesianPoint> dat, Metric<CartesianPoint> metric, int number_nns, double bloom_width, int hash_size_in_bits, int hash_overlap, int num_bits_in_data_source, int number_of_nn_pivots) {
+    public MetricNNMap(List<CartesianPoint> refs, List<CartesianPoint> dat, Metric<CartesianPoint> metric, int number_nns, double bloom_width, int hash_size_in_bits, int hash_overlap, int num_bits_in_data_source, int number_of_nn_pivots) {
 
         int total_size = refs.size() + dat.size();
         Iterator<Integer> identifiers = BalanceGen.getRandomIterator(total_size);
@@ -137,7 +137,7 @@ public class NNMap {
             }
             OpenBitSet bits = bloom.getBits();                            // Debug/analysis
             List<Integer> set_bits = Bloom.getSetBits(bits,bloom_width);  // Debug/analysis
-            System.out.println( "Bits set = " + set_bits.size() + "(" +  ( set_bits.size() * 100 / bits.size() ) +  "%)" );  // Debug/analysis
+            // System.out.println( "Bits set = " + set_bits.size() + "(" +  ( set_bits.size() * 100 / bits.size() ) +  "%)" );  // Debug/analysis
 
             //showDists(ro_index, ol);
             //showBloom( bloom );

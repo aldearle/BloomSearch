@@ -1,7 +1,6 @@
 package uk.al_richard.BloomSearch;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class creates identifiers (ints) which are comprised of even numbers of ones and zeros.
@@ -10,8 +9,8 @@ import java.util.stream.Collectors;
 public class BalanceGen {
 
     // Sizes used for testing only
-    public static final int ONE_THOUSAND = 1000;
-    public static final int ONE_MILLION = ONE_THOUSAND * ONE_THOUSAND;
+    private static final int ONE_THOUSAND = 1000;
+    private static final int ONE_MILLION = ONE_THOUSAND * ONE_THOUSAND;
 
     public BalanceGen() {}
 
@@ -38,14 +37,14 @@ public class BalanceGen {
      */
     public static Iterator<Integer> getIterator( int number_unique_bit_balanced_numbers_required ) {
 
-        final int bits_required = findBits( number_unique_bit_balanced_numbers_required );
+        final int bits_required = numberBitsInBalancedRep( number_unique_bit_balanced_numbers_required );
         final int bits = 1 << bits_required;
 
         return new BalancedBitIterator(bits, bits_required);
     }
 
     /**
-     * @param number - the number of identifiers this code needs to be able to generate
+     * @param number - a number to be checked if bits are balanced
      * @param bits_required
      * @return true if the number of ones and zeros in the representation are equal.
      */
@@ -54,12 +53,13 @@ public class BalanceGen {
         int count_zeros = 0;
         int count_ones = 0;
 
-        for (int bit_index = bits_required - 1; bit_index >= 0; bit_index--) {
-            if( ((number >> bit_index) & 1) == 1 ) {
+        for (int count = 0; count < bits_required; count++ ) {
+            if( ((number & 1) == 1 ) ) {
                 count_ones++;
-            } else if(count_ones > 0) {
+            } else {
                 count_zeros++;
             }
+            number = number >> 1;
         }
         return count_zeros == count_ones;
     }
@@ -71,7 +71,7 @@ public class BalanceGen {
      * @param number_unique_bit_balanced_numbers_required - the number of identifiers this code needs to be able to generate
      * @return the number of bits we require to make all the generated strings of the same length
      */
-    private static int findBits(int number_unique_bit_balanced_numbers_required) {
+    public static int numberBitsInBalancedRep(int number_unique_bit_balanced_numbers_required) {
         for( int i = 1; i < 32; i++ ) {
             if( (1 << i) > number_unique_bit_balanced_numbers_required && i % 2 == 0 ) { // must have even number of bits
                 return i + 4; // +4 heuristic!
@@ -86,16 +86,16 @@ public class BalanceGen {
      * @return the set with the non balanced results removed
      */
     public static Set<Integer> filter(Set<Integer> numbers, int num_bits_in_data_source) {
-//        Set<Integer> result = new HashSet<>();
-//        for( int num : numbers ) {
-//           if( bitsAreBalanced( num, num_bits_in_data_source ) ) {
-//               result.add(num);
-//           } else {
-//           }
-//        }
-//        return result;
+        Set<Integer> result = new HashSet<>();
+        for( int num : numbers ) {
+           if( bitsAreBalanced( num, num_bits_in_data_source ) ) {
+               result.add(num);
+           } else {
+           }
+        }
+        return result;
 
-        return numbers.stream().filter( num -> bitsAreBalanced( num, num_bits_in_data_source ) ).collect(Collectors.toSet()); // can't debug
+//        return numbers.stream().filter( num -> bitsAreBalanced( num, num_bits_in_data_source ) ).collect(Collectors.toSet()); // can't debug
     }
 
     /**

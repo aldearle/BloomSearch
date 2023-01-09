@@ -13,8 +13,10 @@ import java.util.Set;
 
 /**
  * A driver program to test the BloomSearch algorithm
+ * This version works with conventional Metrics and Euclidean data
+ * Another version of this code BloomProductSearch works in a more abstract space of products and users
  */
-public class BloomSearch {
+public class BloomMetricSearch {
 
 	public static void main(String[] args) throws Exception {
 
@@ -22,10 +24,10 @@ public class BloomSearch {
 
 		System.out.println("Date/time\t" + new Date());
 
-		int noOfRefPoints = 500; 							// small for now
+		int no_of_ref_points = 500; 							// small for now
 		TestContext tc = new TestContext(context);
 		int query_size =  1000;
-		tc.setSizes(query_size, noOfRefPoints);
+		tc.setSizes(query_size, no_of_ref_points);
 		List<CartesianPoint> dat = tc.getData();
 		dat = dat.subList(0,100000); 							// small for now
 		List<CartesianPoint> refs = tc.getRefPoints();
@@ -56,7 +58,7 @@ public class BloomSearch {
 		System.out.println( "Number of NN pivots matched in search: " + number_of_nn_pivots_used_in_search );
 
 
-		NNMap map = new NNMap( refs, dat, metric, num_nn_in_bloom, bloom_width, hash_size_in_bits, hash_overlap, bits_in_data_encoding, number_of_nn_pivots_used_in_search );
+		MetricNNMap map = new MetricNNMap( refs, dat, metric, num_nn_in_bloom, bloom_width, hash_size_in_bits, hash_overlap, bits_in_data_encoding, number_of_nn_pivots_used_in_search );
 
 		CartesianPoint query = queries.get(0);
 
