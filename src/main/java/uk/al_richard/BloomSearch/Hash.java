@@ -55,8 +55,8 @@ public class Hash {
      * @return and integer with exactly length bits set
      */
     private static int bits(int length) {
-        int result = 1;
-        for( int i = 1; i < length; i++ ) {
+        int result = 0;
+        for( int i = 0; i < length; i++ ) {
             result = result | (1<<i);
         }
         return result;
