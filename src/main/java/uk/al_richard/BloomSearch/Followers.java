@@ -41,7 +41,6 @@ public class Followers {
 
     public List<Integer> getInfluencersOf( int obj ) {
         System.out.println( "In data : " + data.contains(obj) );
-        System.out.println( "In refs : " + refs.contains(obj) );
         ArrayList<Integer> influencers = new ArrayList<>();
         for( int ro : map.keySet() ) {
             List<Integer> influenced_by = map.get(ro);
@@ -80,4 +79,30 @@ public class Followers {
         int index = rand.nextInt(refs.size()); // random within list of values
         return refs.get(index);
     }
+
+    /**
+     * All the data items should be influenced by the influencers in the query - this checks this.
+     *  @param results - the results of the query - a set of data items
+     * @param query - a list of influencers we are matching against
+     */
+    public void checkResults(Set<Integer> results, List<Integer> query) {
+        for (int data_item : results) {
+            int wrong = 0;
+            int correct = 0;
+            if (data.contains(data_item)) {
+                for (int ref_object : query) {
+                    List<Integer> object_ids = map.get(ref_object);
+                    if (!object_ids.contains(data_item)) {
+                        System.out.println("\tnot influenced by " + ref_object);
+                        wrong++;
+                    } else {
+                        System.out.println("\t    influenced by " + ref_object + "++++");
+                        correct++;
+                    }
+                }
+                System.out.println("Data result: " + data_item + " influencers correct = " + correct + " Wrong = " + wrong);
+            }
+        }
+    }
+
 }

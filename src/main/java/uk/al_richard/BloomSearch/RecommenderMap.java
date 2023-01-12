@@ -18,7 +18,7 @@ public class RecommenderMap {
     private final Map<Integer, Bloom> bloom_map = new HashMap<>();       // Maps from pivot to a bloom filter of points for which that pivot is in the NN set
     private final double bloom_width_bits;                              // The width of the bloom filter
     private final int reference_objects_per_query;                      // The number of reference objects to use to select query solutions
-    private final Hash hash;
+    private final CircularHash hash;
     private final int size_of_balanced_representation;
     private final int no_referrers_per_object;                          // the number of references from the bloom filter to each pivot
     private final int hash_length_in_bits;
@@ -29,7 +29,7 @@ public class RecommenderMap {
 
     private Followers followers;
 
-    public RecommenderMap(List<Integer> refs, List<Integer> dat, Followers followers, double bloom_width_bits, int hash_length_in_bits, int hash_overlap, int size_of_balanced_representation, int reference_objects_per_query, int no_referrers_per_object) {
+    public RecommenderMap(List<Integer> refs, List<Integer> dat, Followers followers, double bloom_width_bits, int hash_length_in_bits, int hash_overlap, int num_hashes, int size_of_balanced_representation, int reference_objects_per_query, int no_referrers_per_object) {
 
         this.dat = dat;
         this.refs = refs;
@@ -44,7 +44,7 @@ public class RecommenderMap {
         this.no_referrers_per_object = no_referrers_per_object;
         this.hash_length_in_bits = hash_length_in_bits;
 
-        this.hash = new Hash( hash_length_in_bits,hash_overlap, size_of_balanced_representation);
+        this.hash = new CircularHash( hash_length_in_bits,hash_overlap, num_hashes, size_of_balanced_representation);
 
         initialiseNNMap(bloom_width_bits,hash_length_in_bits,hash_overlap);
     }
@@ -58,19 +58,27 @@ public class RecommenderMap {
         OpenBitSet bits = andMatches(influenced_by);    // these are the AND of the hashes of datums that for which the ref objects are NNs.
         List<Integer> matching_indices = Bloom.getSetBits(bits,bloom_width_bits);  // the indices into the linear bloom filter corresponding to set bits
 
-        for( int i : matching_indices ) {
-            System.out.println("indices = " + i + "\t" );
-        }
+        System.out.println( "Bits set in soln = " + matching_indices.size() + "(" +  ( matching_indices.size() * 100 / bits.size() ) +  "%)" );  // Debug/analysis
 
         // findIndicesDebug( bloom_map, matching_indices);
 
+
         Set<Integer> results = hash.reverseHashes(matching_indices);  // a set of numbers (inc false +ves) that could give rise to the indices
-        for( int i : results ) {
-            System.out.println("results = " + i + "\t" +  pad(Integer.toBinaryString(i), size_of_balanced_representation) + " " + Util.check( pad( Integer.toBinaryString(i), size_of_balanced_representation ),size_of_balanced_representation ) );
+        if( results.size() == 0 ) {
+            System.out.println("Did not manage to reverse any hashes");
+        } else {
+            for (int i : results) {
+                System.out.println("reversed = " + i + "\t" + pad(Integer.toBinaryString(i), size_of_balanced_representation) + " " + Util.check(pad(Integer.toBinaryString(i), size_of_balanced_representation), size_of_balanced_representation));
+            }
         }
+
         Set<Integer> filtered = BalanceGen.filter(results, size_of_balanced_representation); // filter out the non bit balanced hashes
-        for( int i : filtered ) {
-            System.out.println("filtered = " + i + "\t" +  pad(Integer.toBinaryString(i), size_of_balanced_representation) + " " + Util.check( pad( Integer.toBinaryString(i), size_of_balanced_representation ),size_of_balanced_representation ) );
+        if( filtered.size() == 0 ) {
+            System.out.println("Did find any legal solutions after filtering");
+        } else {
+            for (int i : filtered) {
+                System.out.println("filtered = " + i + "\t" + pad(Integer.toBinaryString(i), size_of_balanced_representation) + " " + Util.check(pad(Integer.toBinaryString(i), size_of_balanced_representation), size_of_balanced_representation));
+            }
         }
         return filtered;
     }
@@ -114,6 +122,8 @@ public class RecommenderMap {
 
     private void initialiseNNMap(double bloom_width_bits, int hash_size_in_bits, int hash_overlap) {
 
+        boolean first = true;
+
         for( int ro : refs ) {
 
             List<Integer> influenced_by = followers.getFollowers(ro);
@@ -128,7 +138,10 @@ public class RecommenderMap {
             }
              OpenBitSet bits = bloom.getBits();                                  // Debug/analysis
              List<Integer> set_bits = Bloom.getSetBits(bits,bloom_width_bits);  // Debug/analysis
-             System.out.println( "Bits set = " + set_bits.size() + "(" +  ( set_bits.size() * 100 / bits.size() ) +  "%)" );  // Debug/analysis
+             if( first ) {
+                 System.out.println( "Bits set = " + set_bits.size() + "(" +  ( set_bits.size() * 100 / bits.size() ) +  "%)" );  // Debug/analysis
+                 first = false;
+             }
 
             //showDists(ro, ol);
             //showBloom( bloom );

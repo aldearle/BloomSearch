@@ -16,6 +16,8 @@ public class BloomProductSearch {
 	public static final int FIVE_HUNDRED = 5 * ONE_HUNDRED;
 	public static final int ONE_THOUSAND = 1000;
 	public static final int TEN_THOUSAND = TEN * ONE_THOUSAND;
+	public static final int FIFTY_THOUSAND = 5 * TEN_THOUSAND;
+	public static final int HUNDRED_THOUSAND = ONE_HUNDRED * ONE_THOUSAND;
 	public static final int ONE_MILLION = ONE_THOUSAND * ONE_THOUSAND;
 	public static final int ONE_POINT_25_MILLION = 125 * TEN_THOUSAND;
 	public static final int TEN_MILLION = 10 * ONE_MILLION;
@@ -34,11 +36,13 @@ public class BloomProductSearch {
 
 		int reference_objects_per_query = 5;
 
-		int objects_per_bloom_filter = FIVE_HUNDRED; // TEN_THOUSAND; //ONE_POINT_25_MILLION;
+		int objects_per_bloom_filter = FIFTY_THOUSAND;
 
-		int hash_length = 14; 										// from paper - https://www.overleaf.com/project/637fcaab8a3088b3ff45c1f0
-		int hash_overlap = 2;
+		int hash_length = 20; 										// from paper - https://www.overleaf.com/project/637fcaab8a3088b3ff45c1f0
+		int hash_overlap = 1; // longer the overlap the less likelihood to get false +ves?
 		int size_of_balanced_representation = BalanceGen.numberBitsInBalancedRep(object_population_size);
+
+		int num_hashes = 6; // also worked with 8
 
 		int no_referrers_per_object = 512 ;				// from paper - https://www.overleaf.com/project/637fcaab8a3088b3ff45c1f0 (top_k_references_per_object)
 														// number of references from data to each reference object
@@ -52,6 +56,7 @@ public class BloomProductSearch {
 		System.out.println( "Objects per bloom filter =\t" + objects_per_bloom_filter );
 		System.out.println( "Bits per bloom filter =\t" + bloom_width_bits );
 		System.out.println( "Hash length=\t" + hash_length );
+		System.out.println( "Num Hashes=\t" + num_hashes );
 		System.out.println( "No of ref objects per query =\t" + reference_objects_per_query );
 
 		System.out.println( "Hash overlap=\t" + hash_overlap );
@@ -61,7 +66,7 @@ public class BloomProductSearch {
 
 		System.out.println( "Creating Recommender Map\t" + new Date() );
 
-		RecommenderMap map = new RecommenderMap( refs, dat, followers, bloom_width_bits, hash_length, hash_overlap, size_of_balanced_representation,reference_objects_per_query,no_referrers_per_object );
+		RecommenderMap map = new RecommenderMap( refs, dat, followers, bloom_width_bits, hash_length, hash_overlap, num_hashes, size_of_balanced_representation, reference_objects_per_query, no_referrers_per_object );
 
 		System.out.println( "Performing Query\t" + new Date() );
 
@@ -74,20 +79,13 @@ public class BloomProductSearch {
 
 		Set<Integer> results = map.search( query );
 
-		System.out.println( "Got " + results.size() + " results" );
+		System.out.println( "Got " + results.size() + " results in final query solution" );
 		for( Integer result : results ) {
 			System.out.println( result + " : " + pad( Integer.toBinaryString( result ),size_of_balanced_representation)  + " : " );
-			showResults( result,followers );
 		}
+		followers.checkResults( results, query );
 	}
 
-	private static void showResults(Integer result, Followers followers) {
-
-		List<Integer> influencers =  followers.getInfluencersOf( result );
-		for( Integer influencer : influencers ) {
-			System.out.println( influencer );
-		}
-	}
 
 	private static List<Integer> carveSlice(Iterator<Integer> dat, int no_of_ref_points) {
 		List<Integer> result = new ArrayList<>();

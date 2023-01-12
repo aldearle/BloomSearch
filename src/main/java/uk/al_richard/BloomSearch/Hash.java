@@ -113,7 +113,7 @@ public class Hash {
                             int end_of_extendand = extendand & NON_OVERLAPPING_BITS;
 //                    System.out.println("hash: " + pad(Integer.toBinaryString(hash), hash_length));
 //                    System.out.println("first " + non_overlap_size + " bits hash: " + pad(Integer.toBinaryString(start_of_hash), non_overlap_size));
-                            if (startOfHashMatchesEndOfExtendand(start_of_hash, end_of_extendand)) {
+                            if (match(start_of_hash, end_of_extendand)) {
                                 // add the non-matched bits from last_bits_hash to the end of extendand
                                 int last_bits_hash = hash & OVERLAPPING_BITS;
 
@@ -139,7 +139,7 @@ public class Hash {
         return result;
     }
 
-    private static boolean startOfHashMatchesEndOfExtendand( int start_of_hash, int end_of_extendand ) {
+    private static boolean match(int start_of_hash, int end_of_extendand ) {
         return ( start_of_hash ^ end_of_extendand ) == 0;
     }
 
