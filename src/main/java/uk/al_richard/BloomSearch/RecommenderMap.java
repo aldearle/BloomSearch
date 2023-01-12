@@ -1,14 +1,11 @@
 package uk.al_richard.BloomSearch;
 
 import uk.al_richard.BloomSearch.Util.OpenBitSet;
-import uk.al_richard.BloomSearch.Util.Util;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static uk.al_richard.BloomSearch.Hash.pad;
 
 /**
  *  A Class to map from reference points to the number_nns which have that reference point in their nearest neighbour set.
@@ -64,22 +61,22 @@ public class RecommenderMap {
 
 
         Set<Integer> results = hash.reverseHashes(matching_indices);  // a set of numbers (inc false +ves) that could give rise to the indices
-        if( results.size() == 0 ) {
-            System.out.println("Did not manage to reverse any hashes");
-        } else {
-            for (int i : results) {
-                System.out.println("reversed = " + i + "\t" + pad(Integer.toBinaryString(i), size_of_balanced_representation) + " " + Util.check(pad(Integer.toBinaryString(i), size_of_balanced_representation), size_of_balanced_representation));
-            }
-        }
+//        if( results.size() == 0 ) {
+//            System.out.println("Did not manage to reverse any hashes");
+//        } else {
+//            for (int i : results) {
+//                System.out.println("reversed = " + i + "\t" + pad(Integer.toBinaryString(i), size_of_balanced_representation) + " " + Util.check(pad(Integer.toBinaryString(i), size_of_balanced_representation), size_of_balanced_representation));
+//            }
+//        }
 
         Set<Integer> filtered = BalanceGen.filter(results, size_of_balanced_representation); // filter out the non bit balanced hashes
-        if( filtered.size() == 0 ) {
-            System.out.println("Did find any legal solutions after filtering");
-        } else {
-            for (int i : filtered) {
-                System.out.println("filtered = " + i + "\t" + pad(Integer.toBinaryString(i), size_of_balanced_representation) + " " + Util.check(pad(Integer.toBinaryString(i), size_of_balanced_representation), size_of_balanced_representation));
-            }
-        }
+//        if( filtered.size() == 0 ) {
+//            System.out.println("Did find any legal solutions after filtering");
+//        } else {
+//            for (int i : filtered) {
+//                System.out.println("filtered = " + i + "\t" + pad(Integer.toBinaryString(i), size_of_balanced_representation) + " " + Util.check(pad(Integer.toBinaryString(i), size_of_balanced_representation), size_of_balanced_representation));
+//            }
+//        }
         return filtered;
     }
 

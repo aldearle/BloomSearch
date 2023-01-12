@@ -2,8 +2,6 @@ package uk.al_richard.BloomSearch;
 
 import java.util.*;
 
-import static uk.al_richard.BloomSearch.Hash.pad;
-
 /**
  * A driver program to test the BloomSearch algorithm
  * This version works with an abstract space of products and users
@@ -27,7 +25,7 @@ public class BloomProductSearch {
 		System.out.println("Date/time\t" + new Date());
 
 		int no_of_ref_points = 4092; 							// from paper - https://www.overleaf.com/project/637fcaab8a3088b3ff45c1f0
-		int object_population_size = ONE_MILLION;	// NOT FROM			// from paper - https://www.overleaf.com/project/637fcaab8a3088b3ff45c1f0
+		int object_population_size = ONE_MILLION;
 
 		Iterator<Integer> generator = BalanceGen.getRandomIterator(object_population_size);
 
@@ -36,24 +34,21 @@ public class BloomProductSearch {
 
 		int reference_objects_per_query = 5;
 
-		int objects_per_bloom_filter = FIFTY_THOUSAND;
-
 		int hash_length = 20; 										// from paper - https://www.overleaf.com/project/637fcaab8a3088b3ff45c1f0
 		int hash_overlap = 1; // longer the overlap the less likelihood to get false +ves?
 		int size_of_balanced_representation = BalanceGen.numberBitsInBalancedRep(object_population_size);
 
-		int num_hashes = 6; // also worked with 8
+		int num_hashes = 8; //
 
-		int no_referrers_per_object = 512 ;				// from paper - https://www.overleaf.com/project/637fcaab8a3088b3ff45c1f0 (top_k_references_per_object)
-														// number of references from data to each reference object
+		int no_referrers_per_object = FIFTY_THOUSAND ;		// from paper - https://www.overleaf.com/project/637fcaab8a3088b3ff45c1f0 (top_k_references_per_object)
+															// number of references from data to each reference object
 
 		double bloom_width_bits = Math.pow(2,hash_length); // size of each bloom filter in bits
 
 		System.out.println( "Object population size =\t" + dat.size() );
 		System.out.println( "Bits needed to encode population =\t" + size_of_balanced_representation );
 		System.out.println( "No of ref objects =\t" + refs.size() );
-		System.out.println( "No references per object =\t" + no_referrers_per_object );
-		System.out.println( "Objects per bloom filter =\t" + objects_per_bloom_filter );
+		System.out.println( "No referrers per object =\t" + no_referrers_per_object );
 		System.out.println( "Bits per bloom filter =\t" + bloom_width_bits );
 		System.out.println( "Hash length=\t" + hash_length );
 		System.out.println( "Num Hashes=\t" + num_hashes );
@@ -62,7 +57,7 @@ public class BloomProductSearch {
 		System.out.println( "Hash overlap=\t" + hash_overlap );
 		System.out.println( "Number of hashes per object: " + new Hash(hash_length, hash_overlap, size_of_balanced_representation).hash( 1432523 ).size() );
 
-		Followers followers = new Followers(refs, dat, objects_per_bloom_filter);
+		Followers followers = new Followers(refs, dat, no_referrers_per_object);
 
 		System.out.println( "Creating Recommender Map\t" + new Date() );
 
@@ -80,10 +75,18 @@ public class BloomProductSearch {
 		Set<Integer> results = map.search( query );
 
 		System.out.println( "Got " + results.size() + " results in final query solution" );
+
+		Set<Integer>  legal_results = new TreeSet<>();
 		for( Integer result : results ) {
-			System.out.println( result + " : " + pad( Integer.toBinaryString( result ),size_of_balanced_representation)  + " : " );
+			if( dat.contains(result) ) { legal_results.add(result); } // some of these are not legal ids
 		}
-		followers.checkResults( results, query );
+
+		System.out.println( "Of those " + legal_results.size() + " are legal in the final query solution" );
+//		for( Integer result : legal_results ) {
+//			System.out.println( result + " : " + pad( Integer.toBinaryString( result ),size_of_balanced_representation)  );
+//		}
+
+		followers.checkResults( legal_results, query );
 	}
 
 
